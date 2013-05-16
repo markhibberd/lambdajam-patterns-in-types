@@ -19,7 +19,7 @@ case class Reader[R, A](run: R => A) {
    *
    */
   def map[B](f: A => B): Reader[R, B] =
-    ???
+    flatMap(a => Reader.value(f(a)))
 
   /*
    * Exercise 2.2:
@@ -31,7 +31,7 @@ case class Reader[R, A](run: R => A) {
    *
    */
   def flatMap[B](f: A => Reader[R, B]): Reader[R, B] =
-    ???
+    Reader(r => f(run(r)).run(r))
 }
 
 object Reader {
@@ -43,7 +43,7 @@ object Reader {
    * Hint: Try using Reader constructor.
    */
   def value[R, A](a: => A): Reader[R, A] =
-    ???
+    Reader(_ => a)
 
   /*
    * Exercise 2.4:
@@ -55,7 +55,7 @@ object Reader {
    * Hint: Try using Reader constructor.
    */
   def ask[R]: Reader[R, R] =
-    ???
+    Reader(r => r)
 
   /*
    * Exercise 2.5:
@@ -67,9 +67,8 @@ object Reader {
    * Hint: Try using Reader constructor.
    */
   def local[R, A](f: R => R)(reader: Reader[R, A]): Reader[R, A] =
-    ???
+    Reader(r => reader.run(f(r)))
 
-  /** see aside below, this is a convenience type for partially applying R to Reader[R, A] */
   class Reader_[R] {
     type l[a] = Reader[R, a]
   }
@@ -91,10 +90,13 @@ object Reader {
   implicit def ReaderMonoid[R, A: Monoid]: Monoid[Reader[R, A]] =
     new Monoid[Reader[R, A]] {
       def zero: Reader[R, A] =
-        ???
+        value[R, A](Monoid[A].zero)
 
       def append(a: Reader[R, A], b: => Reader[R, A]) =
-        ???
+        for {
+          aa <- a
+          bb <- b
+        } yield Monoid[A].append(aa, bb)
     }
 
 
