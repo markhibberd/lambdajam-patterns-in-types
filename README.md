@@ -85,12 +85,16 @@ This challenge presents two styles in 8a and 8b.
    a challenge (for example, you wanted to do 7 and 8b, you can merge
    in the answers for the other exercises with:
 
-    git merge origin/challenge5
-    git merge origin/challenge6
+```
+git merge origin/challenge5
+git merge origin/challenge6
+```
 
  - If you want to have a sneak peek you can just do a diff:
 
-    git diff origin/challenge2 src/main/scala/challenge2
+```
+git diff origin/challenge2 src/main/scala/challenge2
+```
 
  - You are encouraged to jump in at a level which you feel comfortable.
    So starting at 1 or at 8 is fine.
