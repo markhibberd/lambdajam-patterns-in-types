@@ -19,7 +19,7 @@ case class ReaderT[M[_], R, A](run: R => M[A]) {
    *
    */
   def map[B](f: A => B)(implicit M: Monad[M]): ReaderT[M, R, B] =
-    ???
+    flatMap(a => ReaderT.value(f(a)))
 
   /*
    * Exercise 5.2:
@@ -31,7 +31,7 @@ case class ReaderT[M[_], R, A](run: R => M[A]) {
    *
    */
   def flatMap[B](f: A => ReaderT[M, R, B])(implicit M: Monad[M]): ReaderT[M, R, B] =
-    ???
+    ReaderT(r => M.bind(run(r))(a => f(a).run(r)))
 }
 
 object ReaderT {
@@ -43,7 +43,7 @@ object ReaderT {
    * Hint: Try using ReaderT constructor.
    */
   def value[M[_]: Monad, R, A](a: => A): ReaderT[M, R, A] =
-    ???
+    ReaderT(_ => Monad[M].point(a))
 
   /*
    * Exercise 5.4:
@@ -55,7 +55,7 @@ object ReaderT {
    * Hint: Try using ReaderT constructor.
    */
   def ask[M[_]: Monad, R]: ReaderT[M, R, R] =
-    ???
+    ReaderT(r => Monad[M].point(r))
 
   /*
    * Exercise 5.5:
@@ -67,7 +67,7 @@ object ReaderT {
    * Hint: Try using ReaderT constructor.
    */
   def local[M[_], R, A](f: R => R)(reader: ReaderT[M, R, A]): ReaderT[M, R, A] =
-    ???
+    ReaderT(r => reader.run(f(r)))
 
   class ReaderT_[F[_], R] {
     type l[a] = ReaderT[F, R, a]
@@ -92,7 +92,7 @@ object ReaderT {
    */
   implicit def ReaderTMonadTrans[R]: MonadTrans[ReaderT__[R]#l] = new MonadTrans[ReaderT__[R]#l] {
     def liftM[M[_]: Monad, A](ga: M[A]): ReaderT[M, R, A] =
-      ???
+      ReaderT(_ => ga)
   }
 
 }
