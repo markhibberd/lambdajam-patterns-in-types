@@ -18,7 +18,7 @@ case class Http[A](run: (HttpRead, HttpState) => (HttpWrite, HttpState, HttpValu
    *  2) r.map(z => f(g(z))) == r.map(g).map(f)
    */
   def map[B](f: A => B): Http[B] =
-    ???
+    flatMap(a => Http.value(f(a)))
 
   /*
    * Exercise 8a.2:
@@ -30,7 +30,15 @@ case class Http[A](run: (HttpRead, HttpState) => (HttpWrite, HttpState, HttpValu
    *
    */
   def flatMap[B](f: A => Http[B]): Http[B] =
-    ???
+    Http((r, s) => run(r, s) match {
+      case (w, ss, v) => v match {
+        case Explosion(exception) => (w, ss, HttpValue.explosion(exception))
+        case Fail(message) => (w, ss, HttpValue.fail(message))
+        case Ok(a) => f(a).run(r, ss) match {
+          case (ww, sss, vv) => (w ++ ww, sss, vv)
+        }
+      }
+    })
 }
 
 object Http {
@@ -42,7 +50,7 @@ object Http {
    * Hint: Try using Http constructor.
    */
   def value[A](a: => A): Http[A] =
-    ???
+    Http((r, s) => (HttpWrite(Vector()), s, HttpValue.ok(a)))
 
   /*
    * Exercise 8a.4:
@@ -52,7 +60,7 @@ object Http {
    * Hint: Try using Http constructor.
    */
   def httpAsk: Http[HttpRead] =
-    ???
+    Http((r, s) => (HttpWrite(Vector()), s, HttpValue.ok(r)))
 
   /*
    * Exercise 8a.5:
@@ -62,7 +70,7 @@ object Http {
    * Hint: Try using Http constructor.
    */
   def httpGet: Http[HttpState] =
-    ???
+    Http((_, s) => (HttpWrite(Vector()), s, HttpValue.ok(s)))
 
   /*
    * Exercise 8a.6:
@@ -72,7 +80,7 @@ object Http {
    * Hint: Try using Http constructor.
    */
   def httpModify(f: HttpState => HttpState): Http[Unit] =
-    ???
+    Http((_, s) => (HttpWrite(Vector()), f(s), HttpValue.ok(())))
 
   /*
    * Exercise 8a.7:
@@ -83,7 +91,7 @@ object Http {
    *       that have not been specified yet, remember exercise 2 ask?
    */
   def getBody: Http[String] =
-    ???
+    httpAsk map (_.body)
 
   /*
    * Exercise 8a.8:
@@ -94,7 +102,7 @@ object Http {
    *       that have not been specified yet, remember exercise 4 update?
    */
   def addHeader(name: String, value: String): Http[Unit] =
-    ???
+    httpModify(s => s.copy(resheaders = s.resheaders :+ (name, value)))
 
   /*
    * Exercise 8a.9:
@@ -104,7 +112,7 @@ object Http {
    * Hint: Try using Http constructor.
    */
   def log(message: String): Http[Unit] =
-    ???
+    Http((_, s) => (HttpWrite(Vector(message)), s, HttpValue.ok(())))
 }
 
 object HttpExample {
@@ -122,8 +130,12 @@ object HttpExample {
    *
    * Hint: Try using flatMap or for comprehensions.
    */
-  def echo: Http[String] =
-    ???
+  def echo: Http[String] = for {
+    body <- getBody
+    _ <- addHeader("content-type", "text/plain")
+    _ <- log("length was: " + body.length)
+  } yield body
+
 }
 
 
