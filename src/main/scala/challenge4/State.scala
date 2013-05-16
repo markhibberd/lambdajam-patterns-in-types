@@ -19,7 +19,7 @@ case class State[S, A](run: S => (S, A)) {
    *
    */
   def map[B](f: A => B): State[S, B] =
-    ???
+    flatMap(a => State.value(f(a)))
 
   /*
    * Exercise 4.2:
@@ -31,7 +31,9 @@ case class State[S, A](run: S => (S, A)) {
    *
    */
   def flatMap[B](f: A => State[S, B]): State[S, B] =
-    ???
+    State(s => run(s) match {
+      case (ss, a) => f(a).run(ss)
+    })
 }
 
 object State {
@@ -43,7 +45,7 @@ object State {
    * Hint: Try using State constructor.
    */
   def value[S, A](a: => A): State[S, A] =
-    ???
+    State(s => (s, a))
 
   /*
    * Exercise 4.4:
@@ -55,7 +57,7 @@ object State {
    * Hint: Try using State constructor.
    */
   def get[S]: State[S, S] =
-    ???
+    State(s => (s, s))
 
   /*
    * Exercise 4.5:
@@ -67,7 +69,7 @@ object State {
    * Hint: Try building on get.
    */
   def gets[S, A](f: S => A): State[S, A] =
-    ???
+    get map f
 
   /*
    * Exercise 4.6:
@@ -79,7 +81,7 @@ object State {
    * Hint: Try using State constructor.
    */
   def modify[S](f: S => S): State[S, Unit] =
-    ???
+    State(s => (f(s), ()))
 
   /*
    * Exercise 4.7:
@@ -91,7 +93,7 @@ object State {
    * Hint: Try building on modify.
    */
   def put[S](s: S): State[S, Unit] =
-    ???
+    modify(_ => s)
 
   class State_[S] {
     type l[a] = State[S, a]
