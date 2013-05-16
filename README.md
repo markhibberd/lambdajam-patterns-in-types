@@ -79,7 +79,7 @@ This challenge presents two styles in 8a and 8b.
 
  - Challenges are in roughly increasing difficulty.
 
- - Challenges can be done in order (except 8b which depends on  5, 6, 7.
+ - Challenges can be done in any order (except 8b which depends on  5, 6, 7.
 
  - There is a branch that answers each challenge. If you want to skip
    a challenge (for example, you wanted to do 7 and 8b, you can merge
