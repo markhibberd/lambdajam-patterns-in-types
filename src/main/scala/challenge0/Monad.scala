@@ -19,8 +19,17 @@ object Monad {
     def point[A](a: => A) = List(a)
     def bind[A, B](a: List[A])(f: A => List[B]): List[B] = a flatMap f
   }
-}
 
+  implicit class MonadOps[M[_]: Monad, A](a: M[A]) {
+    def map[B](f: A => B) =
+      Monad[M].map(a)(f)
+
+    def flatMap[B](f: A => M[B]) =
+      Monad[M].bind(a)(f)
+      
+    def filter(f: A => Boolean) = a
+  }
+}
 
 object MonadLaws {
   def associative[F[_], A, B, C](fa: F[A], f: A => F[B], g: B => F[C])(implicit FC: Equal[F[C]], F: Monad[F]): Boolean =
