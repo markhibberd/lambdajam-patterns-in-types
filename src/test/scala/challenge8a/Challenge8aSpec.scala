@@ -13,15 +13,15 @@ class Challenge8aSpec extends test.Spec {
   "Echo service" should {
     val echo: Http[String] = HttpExample.echo
     "return body as string" ! prop((r: HttpRead, s: HttpState) =>
-      echo.run(r, s)._3 === HttpValue.ok(r.body)
+      echo.run(r, s)._3 must_== HttpValue.ok(r.body)
     )
 
     "add 'content-type' header of 'text/plain'" ! prop((r: HttpRead, s: HttpState) =>
-      echo.run(r, s)._2.resheaders.headers contains ("content-type" -> "text/plain")
+      echo.run(r, s)._2.resheaders.headers must contain("content-type" -> "text/plain")
     )
 
     "log a message with the length of the body in characters" ! prop((r: HttpRead, s: HttpState) =>
-      echo.run(r, s)._1.log contains (r.body.length.toString)
+      echo.run(r, s)._1.log must contain(r.body.length.toString)
     )
   }
 
