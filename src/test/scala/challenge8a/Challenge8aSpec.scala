@@ -2,7 +2,7 @@ package challenge8a
 
 import challenge0._, EqualSyntax._
 
-class Challenge8aSpec extends test.Spec {
+object Challenge8aSpec extends test.Spec {
   import Laws._
   import HttpArbitraries._
 
