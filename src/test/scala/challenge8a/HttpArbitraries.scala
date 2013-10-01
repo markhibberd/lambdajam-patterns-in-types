@@ -30,6 +30,10 @@ object HttpArbitraries {
       headers <- headersGen
     } yield HttpState(headers)
 
+  implicit val httpReadArbitrary: Arbitrary[HttpRead] = Arbitrary(httpReadGen)
+
+  implicit val httpStateArbitrary: Arbitrary[HttpState] = Arbitrary(httpStateGen)
+
   implicit def httpArbitrary[A: Arbitrary]: Arbitrary[Http[A]] =
     Arbitrary(oneOf(
       arbitrary[A] map (a => Http.value(a)),
