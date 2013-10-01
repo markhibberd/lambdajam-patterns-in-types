@@ -20,5 +20,7 @@ object Challenge3Spec extends test.Spec {
         _ <- tell(i)
         _ <- tell(j)
       } yield ()) === Writer(i ++ j, ()))
+      
+    "satisfy monoid laws" ! monoid.laws[Writer[List[Int], List[Int]]]
   }
 }
