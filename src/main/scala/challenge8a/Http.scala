@@ -105,6 +105,12 @@ object Http {
    */
   def log(message: String): Http[Unit] =
     ???
+
+  implicit def HttpMonad: Monad[Http] =
+    new Monad[Http] {
+      def point[A](a: => A) = ???
+      def bind[A, B](a: Http[A])(f: A => Http[B]) = ???
+    }
 }
 
 object HttpExample {
