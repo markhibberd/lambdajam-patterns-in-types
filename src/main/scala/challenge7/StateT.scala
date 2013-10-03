@@ -19,7 +19,10 @@ case class StateT[M[_], S, A](run: S => M[(S, A)]) {
    *
    */
   def map[B](f: A => B)(implicit M: Monad[M]): StateT[M, S, B] =
-    ???
+    StateT((s: S) => M.bind(run(s))({
+      case (state, value) => M.point(state, f(value))
+    }))
+
 
   /*
    * Exercise 7.2:
@@ -31,7 +34,9 @@ case class StateT[M[_], S, A](run: S => M[(S, A)]) {
    *
    */
   def flatMap[B](f: A => StateT[M, S, B])(implicit M: Monad[M]): StateT[M, S, B] =
-    ???
+    StateT((s: S) => M.bind(run(s))({
+      case (state, value) => f(value).run(state)
+    }))
 }
 
 object StateT {
@@ -42,8 +47,7 @@ object StateT {
    *
    * Hint: Try using StateT constructor.
    */
-  def value[M[_]: Monad, S, A](a: => A): StateT[M, S, A] =
-    ???
+  def value[M[_]: Monad, S, A](a: => A): StateT[M, S, A] = StateT((s: S) => Monad[M].point((s, a)))
 
   /*
    * Exercise 7.4:
@@ -54,8 +58,7 @@ object StateT {
    *
    * Hint: Try using StateT constructor.
    */
-  def get[M[_]: Monad, S]: StateT[M, S, S] =
-    ???
+  def get[M[_]: Monad, S]: StateT[M, S, S] = StateT((s: S) => Monad[M].point((s, s)))
 
   /*
    * Exercise 7.5:
@@ -67,7 +70,7 @@ object StateT {
    * Hint: Try building on get.
    */
   def gets[M[_]: Monad, S, A](f: S => A): StateT[M, S, A] =
-    ???
+    StateT((s: S) => Monad[M].point((s, f(s))))
 
   /*
    * Exercise 7.6:
@@ -79,7 +82,7 @@ object StateT {
    * Hint: Try using State constructor.
    */
   def modify[M[_]: Monad, S](f: S => S): StateT[M, S, Unit] =
-    ???
+    StateT((s: S) => Monad[M].point(f(s), Unit))
 
   /*
    * Exercise 7.7:
@@ -91,7 +94,7 @@ object StateT {
    * Hint: Try building on modify.
    */
   def put[M[_]: Monad, S](s: S): StateT[M, S, Unit] =
-    ???
+    modify((old: S) => s)
 
   class StateT_[F[_], S] {
     type l[a] = StateT[F, S, a]
@@ -116,6 +119,6 @@ object StateT {
    */
   implicit def StateTMonadTrans[S]: MonadTrans[StateT__[S]#l] = new MonadTrans[StateT__[S]#l] {
     def liftM[M[_]: Monad, A](ga: M[A]): StateT[M, S, A] =
-      ???
+      StateT((s: S) => Monad[M].map(ga)(a => (s, a)))
   }
 }

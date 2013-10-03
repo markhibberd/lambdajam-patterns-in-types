@@ -19,7 +19,7 @@ case class Reader[R, A](run: R => A) {
    *
    */
   def map[B](f: A => B): Reader[R, B] =
-    ???
+    Reader.apply(run andThen f)
 
   /*
    * Exercise 2.2:
@@ -29,9 +29,18 @@ case class Reader[R, A](run: R => A) {
    * The following law must hold:
    *   r.flatMap(f).flatMap(g) == r.flatMap(z => f(z).flatMap(g))
    *
+   * Create a function that takes an environment and use it to execute `run` returning an `A`. Pass this `A` into the
+   * provided function `f` to return a Reader[R, B].
+   *
+   * Since a Reader[R, B] is simply a function (R) => (A) we can invoke this function again with the original
+   * environment in order to produce a B. This function is now of the form (R) => (B) and thus we can wrap it in a
+   * reader.
+   *
    */
   def flatMap[B](f: A => Reader[R, B]): Reader[R, B] =
-    ???
+    Reader(r => f(run(r)).run(r))
+
+
 }
 
 object Reader {
@@ -42,8 +51,7 @@ object Reader {
    *
    * Hint: Try using Reader constructor.
    */
-  def value[R, A](a: => A): Reader[R, A] =
-    ???
+  def value[R, A](a: => A): Reader[R, A] = Reader(_ => a)
 
   /*
    * Exercise 2.4:
@@ -54,8 +62,7 @@ object Reader {
    *
    * Hint: Try using Reader constructor.
    */
-  def ask[R]: Reader[R, R] =
-    ???
+  def ask[R]: Reader[R, R] = Reader(r => r)
 
   /*
    * Exercise 2.5:
@@ -67,7 +74,7 @@ object Reader {
    * Hint: Try using Reader constructor.
    */
   def local[R, A](f: R => R)(reader: Reader[R, A]): Reader[R, A] =
-    ???
+    Reader((r: R) => reader.run(f(r)))
 
   /** see aside below, this is a convenience type for partially applying R to Reader[R, A] */
   class Reader_[R] {
@@ -90,11 +97,15 @@ object Reader {
    */
   implicit def ReaderMonoid[R, A: Monoid]: Monoid[Reader[R, A]] =
     new Monoid[Reader[R, A]] {
-      def zero: Reader[R, A] =
-        ???
+      def zero: Reader[R, A] = {
+        val aMonoid = implicitly[Monoid[A]]
+        Reader.value(aMonoid.zero)
+      }
 
-      def append(a: Reader[R, A], b: => Reader[R, A]) =
-        ???
+      def append(a: Reader[R, A], b: => Reader[R, A]) = {
+        val aMonoid = implicitly[Monoid[A]]
+        Reader((r: R) => aMonoid.append(a.run(r), b.run(r)))
+      }
     }
 
 

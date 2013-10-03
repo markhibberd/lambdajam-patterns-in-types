@@ -19,7 +19,11 @@ sealed trait Result[A] {
     explosion: Throwable => X,
     fail: String => X,
     ok: A => X
-  ): X = ???
+  ): X = this match {
+    case Explosion(ex) => explosion(ex)
+    case Fail(message) => fail(message)
+    case Ok(value) => ok(value)
+  }
 
   /*
    * Exercise 1.2:
@@ -32,8 +36,7 @@ sealed trait Result[A] {
    *
    * Hint: Try using flatMap.
    */
-  def map[B](f: A => B): Result[B] =
-    ???
+  def map[B](f: A => B): Result[B] = flatMap(f andThen Result.ok)
 
 
   /*
@@ -46,8 +49,12 @@ sealed trait Result[A] {
    *
    * Hint: Try using fold.
    */
-  def flatMap[B](f: A => Result[B]): Result[B] =
-    ???
+  def flatMap[B](f: A => Result[B]): Result[B] = fold(
+    Result.explosion,
+    Result.fail,
+    f
+  )
+
 }
 
 case class Explosion[A](exception: Throwable) extends Result[A]

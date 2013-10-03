@@ -19,7 +19,9 @@ case class WriterT[M[_], W, A](run: M[(W, A)]) {
    *
    */
   def map[B](f: A => B)(implicit W: Monoid[W], M: Monad[M]): WriterT[M, W, B] =
-    ???
+    WriterT(M.bind(run)({
+      case (log, value) => M.point((log, f(value)))
+    }))
 
   /*
    * Exercise 6.2:
@@ -30,8 +32,13 @@ case class WriterT[M[_], W, A](run: M[(W, A)]) {
    *   r.flatMap(f).flatMap(g) == r.flatMap(z => f(z).flatMap(g))
    *
    */
-  def flatMap[B](f: A => WriterT[M, W, B])(implicit W: Monoid[W], M: Monad[M]): WriterT[M, W, B] =
-    ???
+  def flatMap[B](f: A => WriterT[M, W, B])(implicit W: Monoid[W], M: Monad[M]): WriterT[M, W, B] = {
+    WriterT(M.bind(run)({
+      case (log, value) => M.bind(f(value).run)({
+        case (otherLog, newValue) => M.point(W.append(log, otherLog), newValue)
+      })
+    }))
+  }
 }
 
 object WriterT {
@@ -43,7 +50,7 @@ object WriterT {
    *
    */
   def writer[M[_]: Monad, W, A](a: A)(w: W): WriterT[M, W, A] =
-    ???
+    WriterT(Monad[M].point((w, a)))
 
   /*
    * Exercise 6.4:
@@ -52,7 +59,7 @@ object WriterT {
    * Monoid for W.
    */
   def value[M[_]: Monad, W: Monoid, A](a: => A): WriterT[M, W, A] =
-    ???
+    WriterT(Monad[M].point((Monoid[W].zero, a)))
 
   /*
    * Exercise 6.5:
@@ -62,7 +69,7 @@ object WriterT {
    * Tell appends the writer content w and produces no value.
    */
   def tell[M[_]: Monad, W](w: W): WriterT[M, W, Unit] =
-    ???
+    WriterT(Monad[M].point((w, Unit)))
 
 
   class WriterT_[M[_], W] {
@@ -91,6 +98,6 @@ object WriterT {
    */
   implicit def WriterTMonadTrans[W:Monoid]: MonadTrans[WriterT__[W]#l] = new MonadTrans[WriterT__[W]#l] {
     def liftM[M[_]: Monad, A](ga: M[A]): WriterT[M, W, A] =
-      ???
+      WriterT(Monad[M].map(ga)((Monoid[W].zero, _)))
   }
 }
