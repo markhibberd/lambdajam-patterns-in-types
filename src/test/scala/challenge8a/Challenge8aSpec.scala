@@ -11,7 +11,7 @@ object Challenge8aSpec extends test.Spec {
   }
 
   "Echo service" should {
-    val echo: Http[String] = HttpExample.echo
+    def echo: Http[String] = HttpExample.echo
     "return body as string" ! prop((r: HttpRead, s: HttpState) =>
       echo.run(r, s)._3 must_== HttpValue.ok(r.body)
     )
