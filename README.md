@@ -100,7 +100,7 @@ git diff origin/challenge2 src/main/scala/challenge2
    So starting at 1 or at 8 is fine.
 
  - If you are really confident, I challenge you to implement __all__
-   exercises in the allocted time. It is possible ;)
+   exercises in the allocated time. It is possible ;)
 
  - If at any point you skipped ahead and are having trouble, try
    going back and doing some of the early challenges.
@@ -117,7 +117,7 @@ hopefully it is all straight forward, if not, send
 us an email via <mark@hibberd.id.au>.
 
 
-Pre requisuites.
+Pre-requisites.
 
  1. A valid install of java 6+
  2. git
